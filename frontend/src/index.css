@@ -1,0 +1,742 @@
+/* index.css - Erzurum Technical University Health Literacy Portal Premium Theme */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ETÜ Inspired Color Palette */
+  --etu-navy-dark: #050C17;
+  --etu-navy: #0B192C;
+  --etu-navy-light: #1A2F4C;
+  --etu-turquoise: #00B4D8;
+  --etu-cyan: #00F2FE;
+  --etu-blue: #0077B6;
+  --etu-gold: #E5A93B;
+  --etu-gold-hover: #D09328;
+  
+  /* System colors */
+  --bg-color: #040913;
+  --surface-color: #0E1A30;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --danger-color: #F87171;
+  --danger-bg: rgba(248, 113, 113, 0.1);
+  --warning-color: #FBBF24;
+  --warning-bg: rgba(251, 191, 36, 0.1);
+  --success-color: #34D399;
+  
+  --font-title: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  --glass-bg: rgba(11, 25, 44, 0.7);
+  --glass-border: rgba(0, 180, 216, 0.2);
+  --glass-border-focus: rgba(0, 242, 254, 0.5);
+  --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 100%; /* Projeyi PC ekranlarına göre tam genişlik yapıyoruz */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   AUTH PAGE SPLIT LAYOUT (Giriş/Kayıt Ekranı)
+   ========================================================================== */
+
+.auth-page-wrapper {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--etu-navy-dark);
+}
+
+/* Sol Panel: ETÜ Marka/Tanıtım Alanı */
+.auth-brand-panel {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 60px;
+  position: relative;
+  background: radial-gradient(circle at 10% 20%, rgba(0, 180, 216, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 90% 80%, rgba(229, 169, 59, 0.08) 0%, transparent 50%),
+              linear-gradient(135deg, var(--etu-navy-dark) 0%, #03060C 100%);
+  border-right: 1px solid rgba(0, 180, 216, 0.1);
+  overflow-y: auto;
+}
+
+.auth-brand-header {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.brand-logo-img, .brand-emblem {
+  filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.4));
+  animation: float 4s ease-in-out infinite;
+  object-fit: contain;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-univ {
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(to right, #FFFFFF, var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-sub {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--etu-turquoise);
+}
+
+.auth-brand-content {
+  max-width: 680px;
+  margin: 40px 0;
+}
+
+.auth-brand-content h1 {
+  font-family: var(--font-title);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #FFFFFF 30%, var(--etu-turquoise) 70%, var(--etu-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.brand-intro {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.features-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.feature-card {
+  display: flex;
+  gap: 20px;
+  background: rgba(14, 26, 48, 0.4);
+  border: 1px solid rgba(0, 180, 216, 0.08);
+  padding: 20px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+  background: rgba(14, 26, 48, 0.7);
+  border-color: rgba(0, 242, 254, 0.25);
+  transform: translateX(8px);
+}
+
+.feature-icon-wrapper {
+  background: linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(0, 119, 182, 0.2));
+  color: var(--etu-cyan);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+.feature-text h3 {
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 6px;
+}
+
+.feature-text p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.auth-brand-footer {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Sağ Panel: Giriş/Kayıt Formu */
+.auth-form-panel {
+  flex: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #03060C 0%, var(--etu-navy-dark) 100%);
+  overflow-y: auto;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 440px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--glass-shadow);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.3s;
+}
+
+.auth-box:hover {
+  border-color: rgba(0, 242, 254, 0.3);
+}
+
+.form-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.form-header h2 {
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.form-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.input-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.input-row .input-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.input-field {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.input-field input {
+  width: 100%;
+  background: rgba(4, 9, 19, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.input-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.input-field input:focus {
+  outline: none;
+  border-color: var(--glass-border-focus);
+  background: rgba(4, 9, 19, 0.8);
+  box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.auth-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--etu-turquoise) 0%, var(--etu-blue) 100%);
+  color: #FFFFFF;
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+  margin-top: 10px;
+}
+
+.auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+  background: linear-gradient(135deg, var(--etu-cyan) 0%, var(--etu-blue) 100%);
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
+.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.spinner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.auth-switch span {
+  color: var(--etu-cyan);
+  cursor: pointer;
+  font-weight: 700;
+  transition: color 0.2s;
+}
+
+.auth-switch span:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+}
+
+.error-msg {
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger-color);
+  color: var(--danger-color);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  margin-bottom: 20px;
+  text-align: left;
+  line-height: 1.4;
+  animation: shake 0.4s ease-in-out;
+}
+
+/* ==========================================================================
+   CHAT LAYOUT SYSTEM (Ana Panel)
+   ========================================================================== */
+
+.chat-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--bg-color);
+}
+
+/* Sol Menü: Sidebar */
+.sidebar {
+  width: 280px;
+  background-color: var(--etu-navy-dark);
+  border-right: 1px solid rgba(0, 180, 216, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(0, 180, 216, 0.1);
+  margin-bottom: 24px;
+}
+
+.brand svg {
+  color: var(--etu-cyan);
+  filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.4));
+}
+
+.user-info {
+  background: rgba(14, 26, 48, 0.6);
+  border: 1px solid rgba(0, 180, 216, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.user-info:hover {
+  background: rgba(14, 26, 48, 0.9);
+  border-color: rgba(0, 242, 254, 0.2);
+}
+
+.user-info div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logout-btn {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--danger-color);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font-title);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: var(--danger-color);
+  color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+/* Sağ Alan: Chat Container */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at top right, rgba(0, 180, 216, 0.05) 0%, transparent 60%),
+              var(--bg-color);
+}
+
+.messages-area {
+  flex: 1;
+  padding: 40px 60px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Scrollbar düzenlemesi */
+.messages-area::-webkit-scrollbar,
+.auth-brand-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-area::-webkit-scrollbar-track,
+.auth-brand-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-area::-webkit-scrollbar-thumb,
+.auth-brand-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 180, 216, 0.15);
+  border-radius: 3px;
+}
+
+.messages-area::-webkit-scrollbar-thumb:hover,
+.auth-brand-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 242, 254, 0.3);
+}
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.message-wrapper.user {
+  justify-content: flex-end;
+}
+
+.message-wrapper.ai {
+  justify-content: flex-start;
+}
+
+.message {
+  max-width: 75%;
+  padding: 18px 24px;
+  border-radius: 20px;
+  line-height: 1.6;
+  font-size: 15px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.message.user {
+  background: linear-gradient(135deg, var(--etu-navy-light) 0%, var(--etu-navy) 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  border-bottom-right-radius: 4px;
+}
+
+.message.ai {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom-left-radius: 4px;
+}
+
+/* ==========================================================================
+   ALERTS SYSTEM (Dinamik Uyarı Kutuları)
+   ========================================================================== */
+
+.alert-box {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  border-left: 4px solid;
+  animation: pulseAlert 2s infinite ease-in-out;
+}
+
+.alert-box svg {
+  margin-top: 2px;
+}
+
+.alert-box strong {
+  font-family: var(--font-title);
+  font-size: 14.5px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.alert-box.doctor {
+  background: var(--danger-bg);
+  border-color: var(--danger-color);
+  color: #FECACA;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.alert-box.social {
+  background: var(--warning-bg);
+  border-color: var(--warning-color);
+  color: #FDE68A;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* ==========================================================================
+   INPUT PANEL (Alt Yazma Alanı)
+   ========================================================================== */
+
+.input-area {
+  padding: 30px 60px 40px;
+  background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper textarea {
+  width: 100%;
+  background: rgba(14, 26, 48, 0.8);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  border-radius: 18px;
+  padding: 18px 60px 18px 24px;
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  min-height: 60px;
+  max-height: 180px;
+  transition: all 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.input-wrapper textarea:focus {
+  outline: none;
+  border-color: var(--etu-cyan);
+  background: rgba(14, 26, 48, 1);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+}
+
+.input-wrapper textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.send-btn {
+  position: absolute;
+  right: 14px;
+  background: linear-gradient(135deg, var(--etu-turquoise) 0%, var(--etu-blue) 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 10px rgba(0, 180, 216, 0.3);
+}
+
+.send-btn svg {
+  transition: transform 0.2s;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--etu-cyan) 0%, var(--etu-blue) 100%);
+  transform: scale(1.08) translateY(-1px);
+  box-shadow: 0 6px 15px rgba(0, 242, 254, 0.4);
+}
+
+.send-btn:hover:not(:disabled) svg {
+  transform: translate(1px, -1px);
+}
+
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+@keyframes pulseAlert {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  50% { box-shadow: 0 4px 20px rgba(0, 242, 254, 0.05); }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Bütün Cihaz Uyumluluğu)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .auth-page-wrapper {
+    flex-direction: column;
+  }
+  
+  .auth-brand-panel {
+    flex: none;
+    padding: 40px;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 180, 216, 0.1);
+  }
+  
+  .auth-brand-content h1 {
+    font-size: 28px;
+  }
+  
+  .auth-form-panel {
+    flex: 1;
+    padding: 40px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .messages-area {
+    padding: 20px;
+  }
+  
+  .input-area {
+    padding: 20px;
+  }
+  
+  .sidebar {
+    display: none; /* Mobil için sidebar gizleme veya toggle yapılabilir */
+  }
+  
+  .auth-brand-panel {
+    display: none; /* Mobilde sadece giriş kutusuna odaklanmak için sol paneli gizleyebiliriz */
+  }
+}
