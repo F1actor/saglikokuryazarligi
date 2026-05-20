@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Form, File, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import Optional
 
 from database import engine, get_db, Base
 import models
@@ -67,17 +68,34 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     return {"message": "Giris basarili", "user_id": db_user.id, "first_name": db_user.first_name, "last_name": db_user.last_name}
 
 @app.post("/chat")
-def chat_with_ai(request: schemas.ChatRequest, user_id: int, db: Session = Depends(get_db)):
+async def chat_with_ai(
+    user_id: int,
+    message: str = Form(...),
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
     # 1. Kullaniciyi kontrol et
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Kullanici bulunamadi.")
 
-    # 2. Gemini API'ye gönder ve akış oluştur
+    # 2. Dosya verisini oku (varsa)
+    file_data = None
+    if file:
+        try:
+            file_bytes = await file.read()
+            file_data = {
+                "mime_type": file.content_type,
+                "data": file_bytes
+            }
+        except Exception as file_err:
+            raise HTTPException(status_code=400, detail=f"Dosya okunamadi: {file_err}")
+
+    # 3. API'ye gönder ve akış oluştur
     def event_generator():
         full_response = []
         try:
-            for chunk in ai_service.get_chat_response_stream(request.message):
+            for chunk in ai_service.get_chat_response_stream(message, file_data):
                 full_response.append(chunk)
                 yield chunk
         finally:
@@ -86,10 +104,12 @@ def chat_with_ai(request: schemas.ChatRequest, user_id: int, db: Session = Depen
             clean_text = response_text.replace("[DOKTOR_UYARISI]", "").replace("[SOSYAL_MEDYA_UYARISI]", "").strip()
             clean_text = clean_text.replace("KızılelmAI", "dijital asistanınız").replace("KizilelmAI", "dijital asistanınız")
             
+            # Veritabanına dosya bilgisini de içeren bir query_text yazalım
+            log_query = f"[Dosya: {file.filename}] {message}" if file else message
             try:
                 log = models.QueryLog(
                     user_id=user.id,
-                    query_text=request.message,
+                    query_text=log_query,
                     response_text=clean_text,
                     timestamp=datetime.utcnow()
                 )

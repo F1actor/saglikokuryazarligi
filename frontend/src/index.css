@@ -742,21 +742,37 @@ body {
   background: linear-gradient(to top, var(--bg-color) 80%, transparent);
 }
 
-.input-wrapper {
-  position: relative;
+.input-wrapper-outer {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: rgba(14, 26, 48, 0.8);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-wrapper-outer:focus-within {
+  border-color: var(--etu-cyan);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
 }
 
 .input-wrapper textarea {
   width: 100%;
-  background: rgba(14, 26, 48, 0.8);
-  border: 1px solid rgba(0, 180, 216, 0.2);
-  border-radius: 18px;
-  padding: 18px 60px 18px 24px;
+  background: transparent;
+  border: none;
+  padding: 18px 60px 18px 60px;
   color: #FFFFFF;
   font-family: var(--font-body);
   font-size: 15px;
@@ -765,18 +781,41 @@ body {
   min-height: 60px;
   max-height: 180px;
   transition: all 0.3s;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .input-wrapper textarea:focus {
   outline: none;
-  border-color: var(--etu-cyan);
-  background: rgba(14, 26, 48, 1);
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
 }
 
 .input-wrapper textarea::placeholder {
   color: var(--text-muted);
+}
+
+.attach-btn {
+  position: absolute;
+  left: 18px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.attach-btn:hover:not(:disabled) {
+  color: var(--etu-cyan);
+  background: rgba(0, 180, 216, 0.1);
+}
+
+.attach-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .send-btn {
@@ -794,6 +833,7 @@ body {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 4px 10px rgba(0, 180, 216, 0.3);
+  z-index: 2;
 }
 
 .send-btn svg {
@@ -814,6 +854,138 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+/* Dosya Önizleme Alanı */
+.file-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(14, 26, 48, 0.5);
+  border-bottom: 1px solid rgba(0, 180, 216, 0.1);
+}
+
+.image-preview-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdf-preview-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 180, 216, 0.08);
+  border: 1px solid rgba(0, 180, 216, 0.15);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.pdf-icon {
+  color: #EF4444;
+}
+
+.file-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-file-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.remove-file-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+/* Mesaj Balonlarındaki Dosya Ekleri */
+.message-attachment {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.attached-image-wrapper {
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.attached-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.attached-pdf-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.attached-pdf-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pdf-card-icon {
+  color: #EF4444;
+  flex-shrink: 0;
+}
+
+.pdf-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pdf-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-card-type {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 /* ==========================================================================

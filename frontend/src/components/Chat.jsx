@@ -6,8 +6,11 @@ function Chat({ user, onLogout }) {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Oturumları localStorage'dan yükle (veya varsayılan oluştur)
   useEffect(() => {
@@ -56,6 +59,45 @@ function Chat({ user, onLogout }) {
     scrollToBottom();
   }, [messages]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Dosya türü kontrolü
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Sadece PDF ve resim dosyaları (.png, .jpg, .jpeg, .webp) yüklenebilir.");
+      return;
+    }
+
+    // Dosya boyutu kontrolü (maks 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Dosya boyutu 10MB'tan küçük olmalıdır.");
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Resim ise önizleme oluştur
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleNewChat = () => {
     const newSession = {
       id: Date.now().toString(),
@@ -66,6 +108,7 @@ function Chat({ user, onLogout }) {
     };
     setSessions(prev => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
+    handleRemoveFile();
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
@@ -73,6 +116,7 @@ function Chat({ user, onLogout }) {
 
   const handleSelectSession = (id) => {
     setActiveSessionId(id);
+    handleRemoveFile();
     setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
@@ -108,17 +152,27 @@ function Chat({ user, onLogout }) {
   };
 
   const handleSend = async () => {
-    if (loading || !input.trim()) return;
+    if (loading || (!input.trim() && !selectedFile)) return;
     
     const currentSessionId = activeSessionId;
-    const userMsg = { id: Date.now(), text: input, isAi: false };
+    const userMsg = { 
+      id: Date.now(), 
+      text: input, 
+      isAi: false,
+      file: selectedFile ? {
+        name: selectedFile.name,
+        type: selectedFile.type,
+        preview: filePreview
+      } : null
+    };
     
     // Oturum mesajlarını ve başlığını güncelle (İlk kullanıcı mesajıysa başlığı değiştir)
     setSessions(prev => prev.map(s => {
       if (s.id === currentSessionId) {
         const isFirstUserMsg = s.messages.filter(m => !m.isAi).length === 0;
+        const displayInput = input.trim() || `Dosya: ${selectedFile.name}`;
         const newTitle = isFirstUserMsg 
-          ? (input.trim().substring(0, 22) + (input.trim().length > 22 ? '...' : '')) 
+          ? (displayInput.substring(0, 22) + (displayInput.length > 22 ? '...' : '')) 
           : s.title;
         return {
           ...s,
@@ -129,14 +183,26 @@ function Chat({ user, onLogout }) {
       return s;
     }));
     
+    // FormData hazırla
+    const formData = new FormData();
+    formData.append('message', input);
+    if (selectedFile) {
+      formData.append('file', selectedFile);
+    }
+
+    // Temizle
     setInput('');
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setLoading(true);
 
     try {
       const res = await fetch(`http://localhost:8000/chat?user_id=${user.user_id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg.text })
+        body: formData
       });
       
       if (!res.ok) {
@@ -301,6 +367,30 @@ function Chat({ user, onLogout }) {
           {messages.map((msg) => (
             <div key={msg.id} className={`message-wrapper ${msg.isAi ? 'ai' : 'user'}`}>
               <div className={`message ${msg.isAi ? 'ai' : 'user'}`}>
+                {/* Dosya Eklentisi Gösterimi */}
+                {!msg.isAi && msg.file && (
+                  <div className="message-attachment">
+                    {msg.file.type.startsWith('image/') ? (
+                      <div className="attached-image-wrapper">
+                        <img src={msg.file.preview} alt="Ekli Görsel" className="attached-image" />
+                      </div>
+                    ) : (
+                      <div className="attached-pdf-card">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pdf-card-icon">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        <div className="pdf-card-info">
+                          <span className="pdf-card-name" title={msg.file.name}>{msg.file.name}</span>
+                          <span className="pdf-card-type">PDF Dokümanı</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div style={{whiteSpace: 'pre-wrap'}}>{msg.text}</div>
                 
                 {msg.alertDoctor && (
@@ -344,20 +434,66 @@ function Chat({ user, onLogout }) {
         </div>
 
         <div className="input-area">
-          <div className="input-wrapper">
-            <textarea 
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Sağlık okuryazarlığı ile ilgili bir soru sorun..."
-            />
-            <button className="send-btn" onClick={handleSend} disabled={loading || !input.trim()}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
+          <div className="input-wrapper-outer">
+            {selectedFile && (
+              <div className="file-preview-bar">
+                {filePreview ? (
+                  <div className="image-preview-wrapper">
+                    <img src={filePreview} alt="Önizleme" className="img-preview" />
+                  </div>
+                ) : (
+                  <div className="pdf-preview-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pdf-icon">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span className="file-name">{selectedFile.name}</span>
+                  </div>
+                )}
+                <button className="remove-file-btn" onClick={handleRemoveFile} title="Dosyayı Kaldır">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            <div className="input-wrapper">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                style={{ display: 'none' }} 
+                accept=".pdf,image/png,image/jpeg,image/jpg,image/webp" 
+              />
+              <button 
+                className="attach-btn" 
+                onClick={() => fileInputRef.current?.click()} 
+                disabled={loading}
+                title="Resim veya PDF Ekle"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+              </button>
+
+              <textarea 
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={selectedFile ? "Dosya hakkında soru sorun veya doğrudan gönderin..." : "Sağlık okuryazarlığı ile ilgili bir soru sorun..."}
+              />
+              <button className="send-btn" onClick={handleSend} disabled={loading || (!input.trim() && !selectedFile)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

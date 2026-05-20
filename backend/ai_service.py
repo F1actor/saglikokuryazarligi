@@ -21,7 +21,7 @@ Kuralların:
 Cevaplarını her zaman anlaşılır, bilimsel gerçeklere dayanan ve yardımsever bir tonda ver.
 """
 
-def get_chat_response(message: str) -> dict:
+def get_chat_response(message: str, file_data: dict = None) -> dict:
     if not api_key:
         return {"response": "Sistem hatası: Gemini API anahtarı ayarlanmamış.", "alert_doctor": False, "alert_social_media": False}
 
@@ -29,7 +29,8 @@ def get_chat_response(message: str) -> dict:
     for attempt in range(max_retries + 1):
         try:
             model = genai.GenerativeModel('gemini-3.5-flash', system_instruction=SYSTEM_PROMPT)
-            response = model.generate_content(message)
+            contents = [file_data, message] if file_data else message
+            response = model.generate_content(contents)
             text = response.text
 
             alert_doctor = "[DOKTOR_UYARISI]" in text
@@ -65,7 +66,7 @@ def get_chat_response(message: str) -> dict:
                 "alert_social_media": False
             }
 
-def get_chat_response_stream(message: str):
+def get_chat_response_stream(message: str, file_data: dict = None):
     if not api_key:
         yield "Sistem hatası: Gemini API anahtarı ayarlanmamış."
         return
@@ -74,7 +75,8 @@ def get_chat_response_stream(message: str):
     for attempt in range(max_retries + 1):
         try:
             model = genai.GenerativeModel('gemini-3.5-flash', system_instruction=SYSTEM_PROMPT)
-            response = model.generate_content(message, stream=True)
+            contents = [file_data, message] if file_data else message
+            response = model.generate_content(contents, stream=True)
             for chunk in response:
                 if chunk.text:
                     yield chunk.text
