@@ -2,13 +2,51 @@ import React, { useState, useRef, useEffect } from 'react';
 import etuLogo from '../assets/etu_logo.png';
 
 function Chat({ user, onLogout }) {
-  const [messages, setMessages] = useState([
-    { id: 1, text: `Merhaba ${user.first_name}, ben dijital asistanınız! Sağlık okuryazarlığı konusunda size nasıl yardımcı olabilirim?`, isAi: true }
-  ]);
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Oturumları localStorage'dan yükle (veya varsayılan oluştur)
+  useEffect(() => {
+    const key = `health_literacy_sessions_${user.user_id}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.length > 0) {
+          setSessions(parsed);
+          setActiveSessionId(parsed[0].id);
+          return;
+        }
+      } catch (e) {
+        console.error("Kayıtlı sohbetler yüklenirken hata oluştu:", e);
+      }
+    }
+    
+    // Varsayılan bir oturum oluştur
+    const initialSession = {
+      id: Date.now().toString(),
+      title: 'Yeni Sohbet',
+      messages: [
+        { id: 1, text: `Merhaba ${user.first_name}, ben dijital asistanınız! Sağlık okuryazarlığı konusunda size nasıl yardımcı olabilirim?`, isAi: true }
+      ]
+    };
+    setSessions([initialSession]);
+    setActiveSessionId(initialSession.id);
+  }, [user.user_id]);
+
+  // Her oturum değişikliğinde localStorage'a kaydet
+  useEffect(() => {
+    if (sessions.length > 0) {
+      localStorage.setItem(`health_literacy_sessions_${user.user_id}`, JSON.stringify(sessions));
+    }
+  }, [sessions, user.user_id]);
+
+  const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+  const messages = activeSession ? activeSession.messages : [];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -18,11 +56,79 @@ function Chat({ user, onLogout }) {
     scrollToBottom();
   }, [messages]);
 
+  const handleNewChat = () => {
+    const newSession = {
+      id: Date.now().toString(),
+      title: 'Yeni Sohbet',
+      messages: [
+        { id: Date.now() + 1, text: `Merhaba ${user.first_name}, ben dijital asistanınız! Sağlık okuryazarlığı konusunda size nasıl yardımcı olabilirim?`, isAi: true }
+      ]
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setActiveSessionId(newSession.id);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
+  const handleSelectSession = (id) => {
+    setActiveSessionId(id);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
+  const handleDeleteSession = (id, e) => {
+    e.stopPropagation(); // Satır tıklamasını engelle
+    
+    const updatedSessions = sessions.filter(s => s.id !== id);
+    setSessions(updatedSessions);
+    
+    // LocalStorage'dan silinen oturumu güncelle veya temizle
+    if (updatedSessions.length === 0) {
+      localStorage.removeItem(`health_literacy_sessions_${user.user_id}`);
+    }
+
+    if (activeSessionId === id) {
+      if (updatedSessions.length > 0) {
+        setActiveSessionId(updatedSessions[0].id);
+      } else {
+        // Hiç sohbet kalmadıysa yeni bir tane aç
+        const newSession = {
+          id: Date.now().toString(),
+          title: 'Yeni Sohbet',
+          messages: [
+            { id: Date.now() + 1, text: `Merhaba ${user.first_name}, ben dijital asistanınız! Sağlık okuryazarlığı konusunda size nasıl yardımcı olabilirim?`, isAi: true }
+          ]
+        };
+        setSessions([newSession]);
+        setActiveSessionId(newSession.id);
+      }
+    }
+  };
+
   const handleSend = async () => {
     if (loading || !input.trim()) return;
     
+    const currentSessionId = activeSessionId;
     const userMsg = { id: Date.now(), text: input, isAi: false };
-    setMessages(prev => [...prev, userMsg]);
+    
+    // Oturum mesajlarını ve başlığını güncelle (İlk kullanıcı mesajıysa başlığı değiştir)
+    setSessions(prev => prev.map(s => {
+      if (s.id === currentSessionId) {
+        const isFirstUserMsg = s.messages.filter(m => !m.isAi).length === 0;
+        const newTitle = isFirstUserMsg 
+          ? (input.trim().substring(0, 22) + (input.trim().length > 22 ? '...' : '')) 
+          : s.title;
+        return {
+          ...s,
+          title: newTitle,
+          messages: [...s.messages, userMsg]
+        };
+      }
+      return s;
+    }));
+    
     setInput('');
     setLoading(true);
 
@@ -39,13 +145,21 @@ function Chat({ user, onLogout }) {
           const data = await res.json();
           errorMsg = data.detail || errorMsg;
         } catch (_) {}
-        setMessages(prev => [...prev, { id: Date.now(), text: "Sunucu hatasi: " + errorMsg, isAi: true }]);
+        setSessions(prev => prev.map(s => 
+          s.id === currentSessionId 
+            ? { ...s, messages: [...s.messages, { id: Date.now(), text: "Sunucu hatası: " + errorMsg, isAi: true }] }
+            : s
+        ));
         setLoading(false);
         return;
       }
 
       if (!res.body) {
-        setMessages(prev => [...prev, { id: Date.now(), text: "Sunucu yanıt akışı okunamadı.", isAi: true }]);
+        setSessions(prev => prev.map(s => 
+          s.id === currentSessionId 
+            ? { ...s, messages: [...s.messages, { id: Date.now(), text: "Sunucu yanıt akışı okunamadı.", isAi: true }] }
+            : s
+        ));
         setLoading(false);
         return;
       }
@@ -56,13 +170,20 @@ function Chat({ user, onLogout }) {
       let accumulatedText = '';
       
       const aiMsgId = Date.now();
-      setMessages(prev => [...prev, { 
-        id: aiMsgId, 
-        text: '', 
-        isAi: true,
-        alertDoctor: false,
-        alertSocial: false
-      }]);
+      setSessions(prev => prev.map(s => 
+        s.id === currentSessionId 
+          ? { 
+              ...s, 
+              messages: [...s.messages, { 
+                id: aiMsgId, 
+                text: '', 
+                isAi: true,
+                alertDoctor: false,
+                alertSocial: false
+              }] 
+            }
+          : s
+      ));
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -71,7 +192,6 @@ function Chat({ user, onLogout }) {
           const chunk = decoder.decode(value, { stream: !done });
           accumulatedText += chunk;
 
-          // Arayüz temizleme filtreleri
           const cleanedText = accumulatedText
             .replaceAll("[DOKTOR_UYARISI]", "")
             .replaceAll("[SOSYAL_MEDYA_UYARISI]", "")
@@ -82,16 +202,27 @@ function Chat({ user, onLogout }) {
           const alertDoctor = accumulatedText.includes("[DOKTOR_UYARISI]");
           const alertSocial = accumulatedText.includes("[SOSYAL_MEDYA_UYARISI]");
 
-          // Mesajı anlık olarak güncelliyoruz
-          setMessages(prev => prev.map(msg => 
-            msg.id === aiMsgId 
-              ? { ...msg, text: cleanedText, alertDoctor, alertSocial }
-              : msg
-          ));
+          setSessions(prev => prev.map(s => {
+            if (s.id === currentSessionId) {
+              return {
+                ...s,
+                messages: s.messages.map(msg => 
+                  msg.id === aiMsgId 
+                    ? { ...msg, text: cleanedText, alertDoctor, alertSocial }
+                    : msg
+                )
+              };
+            }
+            return s;
+          }));
         }
       }
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now(), text: "Sunucuya baglanilamadi. Lutfen backend'in calistigindan emin olun.", isAi: true }]);
+      setSessions(prev => prev.map(s => 
+        s.id === currentSessionId 
+          ? { ...s, messages: [...s.messages, { id: Date.now(), text: "Sunucuya bağlanılamadı. Lütfen backend'in çalıştığından emin olun.", isAi: true }] }
+          : s
+      ));
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -112,9 +243,48 @@ function Chat({ user, onLogout }) {
   return (
     <div className="chat-layout">
       <div className="sidebar">
-        <div className="brand">
-          <img src={etuLogo} alt="ETÜ Logo" width="32" height="32" style={{ marginRight: '10px', filter: 'drop-shadow(0 0 6px rgba(0, 242, 254, 0.3))' }} />
-          Sağlık Okuryazarlığı
+        <div className="sidebar-top">
+          <div className="brand">
+            <img src={etuLogo} alt="ETÜ Logo" width="32" height="32" style={{ marginRight: '10px', filter: 'drop-shadow(0 0 6px rgba(0, 242, 254, 0.3))' }} />
+            Sağlık Okuryazarlığı
+          </div>
+          
+          <button className="new-chat-btn" onClick={handleNewChat} disabled={loading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}>
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Yeni Sohbet
+          </button>
+          
+          <div className="sessions-list">
+            {sessions.map((session) => (
+              <div 
+                key={session.id} 
+                className={`session-item ${session.id === activeSessionId ? 'active' : ''}`}
+                onClick={() => handleSelectSession(session.id)}
+              >
+                <div className="session-item-left">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="chat-bubble-icon">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span className="session-title" title={session.title}>{session.title}</span>
+                </div>
+                <button 
+                  className="session-delete-btn" 
+                  onClick={(e) => handleDeleteSession(session.id, e)}
+                  title="Sohbeti Sil"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
         
         <div className="user-info">
